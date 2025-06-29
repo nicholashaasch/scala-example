@@ -1,7 +1,5 @@
 package dao
 
-import dao.TestDb
-import dao.controller.MemberDao
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.slf4j.LoggerFactory
