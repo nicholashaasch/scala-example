@@ -1,0 +1,42 @@
+package dao
+
+import dao.TestDb
+import dao.controller.MemberDao
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
+import org.slf4j.LoggerFactory
+import scalikejdbc.NamedDB
+
+class SetSuite extends AnyFunSuite {
+  val testDb = TestDb
+  val subject = new MemberDao
+  private val logger = LoggerFactory.getLogger(classOf[SetSuite])
+
+  test("create and find all") {
+    NamedDB("foo").localTx { implicit session =>
+      subject.create("test")
+      val foundAll = subject.findAll()
+      assert(foundAll.size == 1)
+      foundAll.head.name.get shouldBe "test"
+    }
+  }
+
+  test("find where name equals") {
+    NamedDB("foo").localTx { implicit session =>
+      subject.create("test")
+      subject.create("my other name")
+      val foundAll = subject.findWhereNameEquals("test")
+      assert(foundAll.size == 1)
+      foundAll.head.name.get shouldBe "test"
+    }
+  }
+
+  test("update name") {
+    NamedDB("foo").localTx { implicit session =>
+      val member = subject.create("test")
+      subject.updateName(memberId = member.id, name = "new name")
+      val found = subject.findById(member.id).get
+      found.name.get shouldBe "test"
+    }
+  }
+}
