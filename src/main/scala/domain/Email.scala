@@ -1,5 +1,7 @@
 package domain
 
+import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import io.circe.{Decoder, Encoder}
 import scalikejdbc.{WrappedResultSet, autoConstruct}
 import scalikejdbc.orm.CRUDMapper
 
@@ -16,4 +18,8 @@ object Email extends CRUDMapper[Email] {
   lazy val defaultAlias = createAlias("me")
 
   override def extract(rs: WrappedResultSet, n: scalikejdbc.ResultName[Email]): Email = autoConstruct(rs, n)
+
+  implicit val encoder: Encoder[Email] = deriveEncoder[Email]
+  implicit val decoder: Decoder[Email] = deriveDecoder[Email]
+
 }

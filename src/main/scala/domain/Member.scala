@@ -1,16 +1,16 @@
 package domain
 
-import scalikejdbc.{WrappedResultSet, autoConstruct}
-import scalikejdbc.orm.CRUDMapper
-import scalikejdbc.orm.timstamps.TimestampsFeature
-
-import java.time.ZonedDateTime
+import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import io.circe.{Decoder, Encoder}
 
 case class Member(
                    id: Long,
                    name: Option[String],
-                   createdAt: ZonedDateTime,
-                   updatedAt: Option[ZonedDateTime],
                    email: Option[Email] = None,
                  )
 
+object Member {
+  implicit val encoder: Encoder[Member] = deriveEncoder[Member]
+  implicit val decoder: Decoder[Member] = deriveDecoder[Member]
+
+}

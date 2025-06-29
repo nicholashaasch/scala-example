@@ -1,15 +1,61 @@
-import controller.MinimalRoutes
-import dao.EmailDao
-import dao.controller.MemberDao
+import dao.{EmailDao, MemberDao}
 import domain.{Email, Member}
+import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import io.circe.syntax.EncoderOps
+import io.circe.{Decoder, Encoder, Json, jawn}
+import org.flywaydb.core.Flyway
 import org.slf4j.LoggerFactory
-import scalikejdbc.{ConnectionPool, NamedDB, sqls}
+import scalikejdbc.{ConnectionPool, NamedDB}
+import zio.ZIOAppDefault
+import zio.http._
 
-object MyApp extends cask.Main {
+object MyApp  extends ZIOAppDefault {
   private val logger = LoggerFactory.getLogger(classOf[MemberDao])
+  val flyway: Flyway = Flyway.configure.dataSource("jdbc:postgresql://192.168.0.243:5432/postgres", "postgres", "password").load
+  flyway.migrate()
+
   logger.error("Hello world")
 
-  val allRoutes = Seq(MinimalRoutes())
+  val memberDao = new MemberDao
+  val emailDao = new EmailDao
+
+//  val allRoutes = Seq(MinimalRoutes(), MemberController(memberDao))
+  val routes =
+    Routes(
+      Method.GET / Root -> handler(Response.text("Greetings at your service")),
+      Method.GET / "member" -> handler { (req: Request) =>
+        val membersJson = NamedDB("foo").readOnly{ implicit session =>
+          memberDao.findAll().asJson.spaces2
+        }
+        val resp = Response.json(membersJson)
+        println("My Json " + membersJson)
+        println("My response " + resp)
+        resp.copy(headers = resp.headers ++ Headers("Access-Control-Allow-Origin" -> "*"))
+      },
+      Method.POST / "member" -> handler { (req: Request) =>
+        req.body.asString.map { ab =>
+          val memberPost:MemberPost = try {
+            jawn.decode[MemberPost](ab).getOrElse(throw new Exception())
+          }catch {
+            case e:Exception => {
+              e.printStackTrace()
+              throw e;
+            }
+          }
+          val memberJson = NamedDB("foo").localTx { implicit session =>
+            memberDao.create(memberPost.name).asJson.spaces2
+          }
+          val resp = Response.json(memberJson)
+          resp.copy(headers = resp.headers ++ Headers("Access-Control-Allow-Origin" -> "*"))
+        }
+      }.sandbox
+
+    )
+
+
+
+
+  override def run = Server.serve(routes).provide(Server.default)
 
     // ### Database connection ###
     Class.forName("org.postgresql.Driver")
@@ -38,8 +84,6 @@ object MyApp extends cask.Main {
 //  )""".execute.apply()
 
 
-  val memberDao = new MemberDao
-  val emailDao = new EmailDao
 
   // ### Insert rows ###
   val ids = Seq("Alice", "Bob", "Chris") map { name =>
@@ -95,3 +139,10 @@ object MyApp extends cask.Main {
 
 
 
+case class MemberPost(name:String)
+
+object MemberPost {
+  implicit val encPerson: Encoder[MemberPost] = deriveEncoder[MemberPost]
+  implicit val decPerson: Decoder[MemberPost] = deriveDecoder[MemberPost]
+
+}
