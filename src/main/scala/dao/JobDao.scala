@@ -4,10 +4,10 @@ import domain.Job
 import scalikejdbc.orm.CRUDMapper
 import scalikejdbc.{DBSession, WrappedResultSet, autoConstruct}
 
-class JobDao() {
+class JobDao(connectPoolName:String) {
   object Job extends CRUDMapper[Job]{
     override lazy val tableName = "job"
-    override val connectionPoolName = "foo"
+    override val connectionPoolName: String = connectPoolName
     lazy val defaultAlias = createAlias("j")
 
     override def extract(rs: WrappedResultSet, n: scalikejdbc.ResultName[Job]): Job = autoConstruct(rs, n)

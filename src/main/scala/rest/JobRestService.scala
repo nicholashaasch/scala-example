@@ -2,7 +2,7 @@ package rest
 
 import dao.JobDao
 import domain.Job
-import io.circe.jawn
+import io.circe.jawn.decode
 import io.circe.syntax.EncoderOps
 import io.javalin.http.Context
 import scalikejdbc.NamedDB
@@ -20,7 +20,7 @@ class JobRestService(jobDao:JobDao) extends RestService {
 
   override def create(context: Context): Unit = {
         val job:Job = try {
-          jawn.decode[Job](context.body()).getOrElse(throw new Exception())
+          decode[Job](context.body()).getOrElse(throw new Exception())
         }catch {
           case e:Exception => {
             throw e;
