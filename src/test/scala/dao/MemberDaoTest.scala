@@ -5,10 +5,10 @@ import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.slf4j.LoggerFactory
 import scalikejdbc.NamedDB
 
-class SetSuite extends AnyFunSuite {
+class MemberDaoTest extends AnyFunSuite {
   val testDb = TestDb
   val subject = new MemberDao
-  private val logger = LoggerFactory.getLogger(classOf[SetSuite])
+  private val logger = LoggerFactory.getLogger(classOf[MemberDaoTest])
 
   test("create and find all") {
     NamedDB("foo").localTx { implicit session =>
@@ -21,11 +21,11 @@ class SetSuite extends AnyFunSuite {
 
   test("find where name equals") {
     NamedDB("foo").localTx { implicit session =>
-      subject.create("test")
+      subject.create("test2")
       subject.create("my other name")
-      val foundAll = subject.findWhereNameEquals("test")
+      val foundAll = subject.findWhereNameEquals("test2")
       assert(foundAll.size == 1)
-      foundAll.head.name.get shouldBe "test"
+      foundAll.head.name.get shouldBe "test2"
     }
   }
 

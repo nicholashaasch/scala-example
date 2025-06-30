@@ -23,11 +23,6 @@
             <version>${scala.version}</version>
         </dependency>
         <dependency>
-            <groupId>dev.zio</groupId>
-            <artifactId>zio-http_2.13</artifactId>
-            <version>3.3.3</version>
-        </dependency>
-        <dependency>
             <groupId>org.scalikejdbc</groupId>
             <artifactId>scalikejdbc_2.13</artifactId>
             <version>4.3.4</version>
@@ -93,6 +88,16 @@
             <groupId>io.circe</groupId>
             <artifactId>circe-generic_2.13</artifactId>
             <version>0.14.14</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.zio</groupId>
+            <artifactId>zio-http_2.13</artifactId>
+            <version>3.3.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sparkjava</groupId>
+            <artifactId>spark-core</artifactId>
+            <version>2.9.4</version>
         </dependency>
     </dependencies>
 

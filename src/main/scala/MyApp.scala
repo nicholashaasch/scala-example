@@ -1,5 +1,5 @@
-import dao.{EmailDao, MemberDao}
-import domain.{Email, Member}
+import dao.{EmailDao, JobDao, MemberDao}
+import domain.{Email, Job, Member}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.syntax.EncoderOps
 import io.circe.{Decoder, Encoder, Json, jawn}
@@ -18,6 +18,7 @@ object MyApp  extends ZIOAppDefault {
 
   val memberDao = new MemberDao
   val emailDao = new EmailDao
+  val jobDao = new JobDao
 
 //  val allRoutes = Seq(MinimalRoutes(), MemberController(memberDao))
   val routes =
@@ -28,8 +29,6 @@ object MyApp  extends ZIOAppDefault {
           memberDao.findAll().asJson.spaces2
         }
         val resp = Response.json(membersJson)
-        println("My Json " + membersJson)
-        println("My response " + resp)
         resp.copy(headers = resp.headers ++ Headers("Access-Control-Allow-Origin" -> "*"))
       },
       Method.POST / "member" -> handler { (req: Request) =>
@@ -48,8 +47,31 @@ object MyApp  extends ZIOAppDefault {
           val resp = Response.json(memberJson)
           resp.copy(headers = resp.headers ++ Headers("Access-Control-Allow-Origin" -> "*"))
         }
-      }.sandbox
-
+      }.sandbox,
+      Method.GET / "job" ->  handler { (req: Request) =>
+        val json = NamedDB("foo").readOnly{ implicit session =>
+          jobDao.findAll().asJson.spaces2
+        }
+        val resp = Response.json(json)
+        resp.copy(headers = resp.headers ++ Headers("Access-Control-Allow-Origin" -> "*"))
+      },
+      Method.POST / "job" -> handler { (req: Request) =>
+        req.body.asString.map { ab =>
+          val job:Job = try {
+            jawn.decode[Job](ab).getOrElse(throw new Exception())
+          }catch {
+            case e:Exception => {
+              e.printStackTrace()
+              throw e;
+            }
+          }
+          val json = NamedDB("foo").localTx { implicit session =>
+            jobDao.create(job).asJson.spaces2
+          }
+          val resp = Response.json(json)
+          resp.copy(headers = resp.headers ++ Headers("Access-Control-Allow-Origin" -> "*"))
+        }
+      }.sandbox,
     )
 
 
