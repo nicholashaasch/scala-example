@@ -10,9 +10,3 @@ class RunDataMapJob extends Job {
     jobExecutionContext.getJobDetail.getJobDataMap.get("job").asInstanceOf[Runnable].run()
   }
 }
-
-
-
-
-
-

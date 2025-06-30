@@ -10,7 +10,7 @@ import scalikejdbc.NamedDB
 class JobRestService(jobDao: JobDao) extends RestService {
 
   override def getAll(context: Context): Unit = {
-    val jobJson = NamedDB("foo").readOnly { implicit session =>
+    val jobJson = NamedDB(jobDao.connectPoolName).readOnly { implicit session =>
       jobDao.findAll().asJson.spaces2
     }
     val response = context.res
@@ -26,7 +26,7 @@ class JobRestService(jobDao: JobDao) extends RestService {
         throw e;
       }
     }
-    val json = NamedDB("foo").localTx { implicit session =>
+    val json = NamedDB(jobDao.connectPoolName).localTx { implicit session =>
       jobDao.create(job).asJson.spaces2
     }
     context.json(json)
