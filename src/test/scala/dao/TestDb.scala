@@ -5,10 +5,11 @@ import scalikejdbc.{ConnectionPool, NamedDB}
 
 object TestDb {
 
+  val connectionPoolName = "foo"
   Class.forName("org.h2.Driver")
-  ConnectionPool.add("foo", "jdbc:h2:mem:hello;MODE=PostgreSQL", "user", "pass")
+  ConnectionPool.add(connectionPoolName, "jdbc:h2:mem:hello;MODE=PostgreSQL", "user", "pass")
 
-  NamedDB("foo").localTx { implicit session =>
+  NamedDB(connectionPoolName).localTx { implicit session =>
     val flyway: Flyway = Flyway.configure.dataSource("jdbc:h2:mem:hello;MODE=PostgreSQL", "user", "pass").load
     flyway.migrate()
   }
