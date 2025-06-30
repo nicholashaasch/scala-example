@@ -4,7 +4,7 @@ import io.javalin.apibuilder.ApiBuilder.crud
 import job.{DeleteMyCompanyJobsJob, QuartzJob, RunDataMapJob}
 import org.flywaydb.core.Flyway
 import org.quartz.impl.StdSchedulerFactory
-import org.quartz.{CronScheduleBuilder, JobBuilder, JobDataMap, JobDetail, TriggerBuilder}
+import org.quartz._
 import org.slf4j.LoggerFactory
 import rest.JobRestService
 import scalikejdbc.ConnectionPool
@@ -51,5 +51,4 @@ object Application extends App {
     scheduler.scheduleJob(job, trigger)
   }
   scheduler.start()
-
 }
