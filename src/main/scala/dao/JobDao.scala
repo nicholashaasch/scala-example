@@ -4,7 +4,7 @@ import domain.Job
 import scalikejdbc.orm.CRUDMapper
 import scalikejdbc.{DBSession, WrappedResultSet, autoConstruct}
 
-class JobDao(connectPoolName:String) {
+class JobDao(val connectPoolName:String) {
   object Job extends CRUDMapper[Job]{
     override lazy val tableName = "job"
     override val connectionPoolName: String = connectPoolName
@@ -31,6 +31,10 @@ class JobDao(connectPoolName:String) {
 
   def findAllById(ids:Seq[Long])(implicit session: DBSession):List[Job] = {
     Job.findAllByIds(ids:_*)
+  }
+
+  def deleteById(id:Long)(implicit session: DBSession) = {
+    Job.deleteById(id)
   }
 }
 
