@@ -3,8 +3,8 @@ import { Route, NavLink, Routes, HashRouter } from "react-router-dom";
 
 
 
-import Submit from "./Submit";
-import {List} from "./List";
+import List from "./List";
+import {Submit} from "./Submit";
 import {Home} from "./Home";
 
 class App extends Component {
@@ -20,8 +20,8 @@ class App extends Component {
                     <div className="content">
                         <Routes>
                             <Route path="/" element={<Home />}></Route>
-                            <Route path="/submit" element={<List />}></Route>
-                            <Route path="/list" element={<Submit />}></Route>
+                            <Route path="/submit" element={<Submit />}></Route>
+                            <Route path="/list" element={<List />}></Route>
                         </Routes>
                     </div>
                 </div>

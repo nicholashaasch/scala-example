@@ -1,15 +1,18 @@
 import dao.{EmailDao, JobDao, MemberDao}
-import domain.{Email, Job, Member}
+import domain.{Email, Member}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.syntax.EncoderOps
-import io.circe.{Decoder, Encoder, Json, jawn}
+import io.circe.{Decoder, Encoder}
+import io.javalin.Javalin
+import io.javalin.apibuilder.ApiBuilder.crud
+import io.javalin.apibuilder.CrudHandler
+import io.javalin.http.{Context, Handler}
 import org.flywaydb.core.Flyway
 import org.slf4j.LoggerFactory
+import rest.JobRestService
 import scalikejdbc.{ConnectionPool, NamedDB}
-import zio.ZIOAppDefault
-import zio.http._
 
-object MyApp  extends ZIOAppDefault {
+object MyApp extends App {
   private val logger = LoggerFactory.getLogger(classOf[MemberDao])
   val flyway: Flyway = Flyway.configure.dataSource("jdbc:postgresql://192.168.0.243:5432/postgres", "postgres", "password").load
   flyway.migrate()
@@ -20,92 +23,20 @@ object MyApp  extends ZIOAppDefault {
   val emailDao = new EmailDao
   val jobDao = new JobDao
 
-//  val allRoutes = Seq(MinimalRoutes(), MemberController(memberDao))
-  val routes =
-    Routes(
-      Method.GET / Root -> handler(Response.text("Greetings at your service")),
-      Method.GET / "member" -> handler { (req: Request) =>
-        val membersJson = NamedDB("foo").readOnly{ implicit session =>
-          memberDao.findAll().asJson.spaces2
-        }
-        val resp = Response.json(membersJson)
-        resp.copy(headers = resp.headers ++ Headers("Access-Control-Allow-Origin" -> "*"))
-      },
-      Method.POST / "member" -> handler { (req: Request) =>
-        req.body.asString.map { ab =>
-          val memberPost:MemberPost = try {
-            jawn.decode[MemberPost](ab).getOrElse(throw new Exception())
-          }catch {
-            case e:Exception => {
-              e.printStackTrace()
-              throw e;
-            }
-          }
-          val memberJson = NamedDB("foo").localTx { implicit session =>
-            memberDao.create(memberPost.name).asJson.spaces2
-          }
-          val resp = Response.json(memberJson)
-          resp.copy(headers = resp.headers ++ Headers("Access-Control-Allow-Origin" -> "*"))
-        }
-      }.sandbox,
-      Method.GET / "job" ->  handler { (req: Request) =>
-        val json = NamedDB("foo").readOnly{ implicit session =>
-          jobDao.findAll().asJson.spaces2
-        }
-        val resp = Response.json(json)
-        resp.copy(headers = resp.headers ++ Headers("Access-Control-Allow-Origin" -> "*"))
-      },
-      Method.POST / "job" -> handler { (req: Request) =>
-        req.body.asString.map { ab =>
-          val job:Job = try {
-            jawn.decode[Job](ab).getOrElse(throw new Exception())
-          }catch {
-            case e:Exception => {
-              e.printStackTrace()
-              throw e;
-            }
-          }
-          val json = NamedDB("foo").localTx { implicit session =>
-            jobDao.create(job).asJson.spaces2
-          }
-          val resp = Response.json(json)
-          resp.copy(headers = resp.headers ++ Headers("Access-Control-Allow-Origin" -> "*"))
-        }
-      }.sandbox,
-    )
+
+   val jobRestService = new JobRestService(jobDao)
 
 
+  val app = Javalin.create { config =>
+
+    config.router.apiBuilder(() => {
+      crud("/job/{jobId}", jobRestService)
+    })
+  }.start(8080)
 
 
-  override def run = Server.serve(routes).provide(Server.default)
-
-    // ### Database connection ###
-    Class.forName("org.postgresql.Driver")
-
-  //Class.forName("org.h2.Driver")
-
-  //ConnectionPool.singleton("jdbc:postgresql://192.168.0.243:5432/postgres", "postgres", "password")
+  Class.forName("org.postgresql.Driver")
   ConnectionPool.add("foo", "jdbc:postgresql://192.168.0.243:5432/postgres", "postgres", "password")
-  //ConnectionPool.singleton("jdbc:h2:mem:hello;MODE=PostgreSQL", "user", "pass")
-  //ConnectionPool.add("foo", "jdbc:h2:mem:hello;MODE=PostgreSQL", "user", "pass")
-
-  //Class.forName("org.h2.Driver")
-  //implicit val session: DBSession = AutoSession
-
-  // ### Create tables ###
-//  sql"""create table member (
-//    id serial not null primary key,
-//    name varchar(64),
-//    created_at timestamp not null,
-//    updated_at timestamp
-//  )""".execute.apply()
-//  sql"""create table member_email (
-//    id serial not null primary key,
-//    member_id int not null,
-//    address varchar(256) not null
-//  )""".execute.apply()
-
-
 
   // ### Insert rows ###
   val ids = Seq("Alice", "Bob", "Chris") map { name =>

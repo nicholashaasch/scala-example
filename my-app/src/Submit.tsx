@@ -1,12 +1,17 @@
 import React, {Component, useState} from "react";
+import {Job} from "./List";
 
-export function List(props) {
-    const [formData, setFormData] = useState({
-        name: '',
-        desc: '',
+interface SubmitProps {
+
+}
+
+export function Submit(props:SubmitProps) {
+    const [formData, setFormData] = useState<Job>({
+        company: '',
+        description: '',
     });
 
-    const handleChange = (e) => {
+    const handleChange = (e:any) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
@@ -14,10 +19,10 @@ export function List(props) {
         fetch('http://localhost:8080/job', {
             method: 'POST',
             body: JSON.stringify({
-                company: formData.name,
-                description: formData.desc
+                company: formData.company,
+                description: formData.description
+             })
             })
-        })
             .then(response => response.json())
             .then(json => {
                 return json;
@@ -32,15 +37,13 @@ export function List(props) {
             <form onSubmit={handleSubmit}>
                 <label>
                     Name
-                    <input name={"name"} type={"text"} value={formData.name} onChange={handleChange} />
-
+                    <input name={"company"} type={"text"} value={formData.company} onChange={handleChange} />
                 </label>
                 <label>
                     Description
-                    <textarea name={"desc"} value={formData.desc} onChange={handleChange} />
+                    <textarea name={"description"} value={formData.description} onChange={handleChange} />
                 </label>
                 <button type="submit">Submit</button>
-                />
             </form>
         </div>
     );
