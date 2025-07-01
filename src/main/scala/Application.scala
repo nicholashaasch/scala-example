@@ -35,6 +35,6 @@ object Application extends App {
   quartzService.schedule()
 
   logger.info("Starting Kafka")
-  //val kafkaService = new KafkaService
-  //kafkaService.run()
+  val kafkaService = new KafkaService
+  kafkaService.run()
 }
