@@ -15,11 +15,11 @@ This project mixes together these technologies
 * Kafka - Sending messages
 * React - UI
 
-The project can be imported into Intellij from the pom.xml
-Run docker compose up to bring up the DB
-Edit DB to point toward your DB url
-Edit Kafka to point toward your kafka server (or comment out kafkaService.run() in application)
 
 
+To get this project to run
 
-
+* The project can be imported into Intellij from the pom.xml
+* Run docker compose up to bring up the DB
+* Edit DB to point toward your DB url
+* Edit Kafka to point toward your kafka server (or comment out kafkaService.run() in application)
